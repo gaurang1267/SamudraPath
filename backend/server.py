@@ -4,7 +4,6 @@ import json
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import filter_csv
-import filter_csv_nsga
 import shutil
 
 
@@ -27,21 +26,23 @@ def calculate_route():
         if missing_params:
             return jsonify({"error": f"Missing parameters: {', '.join(missing_params)}"}), 400
 
-        # Define static filenames
+        # Define filenames
         original_output_files = [
-            'path_fuel.csv', 'path_safe.csv', 'path_short.csv','data_points.csv', 'results.csv'
+            'path_fuel.csv', 'path_safe.csv', 'path_short.csv'
         ]
         smoothed_output_files = [
-            'path_fuel_smoothed.csv', 'path_safe_smoothed.csv', 'path_short_smoothed.csv', 'results.csv'
-        ]
-        save_folder = "C:/Users/Admin/Desktop/SamudraPath/SamudraPath/public"
-        
-        # Specific files to remove
-        files_to_remove = [
-            'path_fuel.csv', 'path_safe.csv', 'path_short.csv',
             'path_fuel_smoothed.csv', 'path_safe_smoothed.csv', 'path_short_smoothed.csv'
-            'data_points.csv', 'results.csv'
         ]
+        additional_output_files = [
+            'results.csv'  # Removed 'data_points.csv' as per your request
+        ]
+        save_folder = r"C:\Users\Admin\Desktop\SamudraPath\SamudraPath\public"
+
+        # Define the output directory containing additional files
+        output_directory = "output"  # Adjust this path if 'output' is located elsewhere
+
+        # Specific files to remove before processing (excluding 'data_points.csv')
+        files_to_remove = original_output_files + smoothed_output_files + additional_output_files
 
         # Selectively remove only route-related files
         for filename in files_to_remove:
@@ -52,11 +53,10 @@ def calculate_route():
         # Ensure the save folder exists
         os.makedirs(save_folder, exist_ok=True)
 
-        
-        from new_algorithm import main
-            
+        # Run the main algorithm
+        from algorithm import main as algorithm_main
         try:
-            results = main(
+            results = algorithm_main(
                 start_lat=data['start_lat'],
                 start_lon=data['start_lon'],
                 goal_lat=data['goal_lat'],
@@ -73,11 +73,11 @@ def calculate_route():
             )
         except ValueError as e:
             return jsonify({"error": str(e)}), 400
-        
 
-        from nsga import main
+        # Run the NSGA algorithm
+        from nsga import main as nsga_main
         try:
-            main(
+            nsga_main(
                 start_lat=data["start_lat"],
                 start_lon=data["start_lon"],
                 goal_lat=data["goal_lat"],
@@ -87,55 +87,73 @@ def calculate_route():
         except ValueError as e:
             return jsonify({"error": str(e)}), 400
 
-
-        # Verify output files
+        # Verify original output files are generated
         if not all(os.path.exists(file) for file in original_output_files):
             return jsonify({"error": "Route calculation failed. One or more output files not found."}), 500
 
-        # Smooth routes using filter_csv module
+        # Smooth static routes using filter_csv module
         try:
+            # Process and save route for fuel
             smoothed_route_fuel = filter_csv.process_route("path_fuel.csv", epsilon=0.001, window_size=3)
             filter_csv.save_to_csv(smoothed_route_fuel, "path_fuel_smoothed.csv")
 
-                # Process and save route for safe
+            # Process and save route for safe
             smoothed_route_safe = filter_csv.process_route("path_safe.csv", epsilon=0.001, window_size=3)
             filter_csv.save_to_csv(smoothed_route_safe, "path_safe_smoothed.csv")
 
-                # Process and save route for short
+            # Process and save route for short
             smoothed_route_short = filter_csv.process_route("path_short.csv", epsilon=0.001, window_size=3)
             filter_csv.save_to_csv(smoothed_route_short, "path_short_smoothed.csv")
 
-            dynamic_files = [file for file in os.listdir() if file.startswith('path_') and not file.endswith('_smoothed.csv')]
-            for i, file in enumerate(dynamic_files+1):
-                smoothed_route = filter_csv.process_route(file, epsilon=0.001, window_size=3)
-                smoothed_file_name = f"path_{i}_smoothed.csv"
-                filter_csv.save_to_csv(smoothed_route, smoothed_file_name)
-
-                # Copy smoothed dynamic file to the save folder
-                dest_path = os.path.join(save_folder, smoothed_file_name)
-                shutil.copy2(smoothed_file_name, dest_path)
+            # Copy smoothed static files to the save folder
+            for file in smoothed_output_files:
+                if os.path.exists(file):
+                    dest_path = os.path.join(save_folder, os.path.basename(file))
+                    shutil.copy2(file, dest_path)
 
         except Exception as e:
             return jsonify({"error": f"Route smoothing failed: {str(e)}"}), 500
 
-        # Verify smoothed output files
-        for file in smoothed_output_files:
-            if os.path.exists(file):
-                dest_path = os.path.join(save_folder, os.path.basename(file))
-                shutil.copy2(file, dest_path)
-                os.remove(file)  # Remove the file from the output directory
+        # Copy additional output files to the save folder and delete after copying
+        try:
+            for file in additional_output_files:
+                if os.path.exists(file):
+                    dest_path = os.path.join(save_folder, os.path.basename(file))
+                    shutil.copy2(file, dest_path)
+        except Exception as e:
+            return jsonify({"error": f"Failed to copy additional output files: {str(e)}"}), 500
 
-# Also, remove the dynamic smoothed files
-        dynamic_smoothed_files = [file for file in os.listdir() if file.startswith('path_') and file.endswith('_smoothed.csv')]
-        for file in dynamic_smoothed_files:
-            os.remove(file)
+        # Copy all files from the 'output' directory to the save folder and delete after copying
+        try:
+            if os.path.isdir(output_directory):
+                for filename in os.listdir(output_directory):
+                    source_path = os.path.join(output_directory, filename)
+                    if os.path.isfile(source_path):
+                        dest_path = os.path.join(save_folder, filename)
+                        shutil.copy2(source_path, dest_path)
+            else:
+                app.logger.warning(f"The output directory '{output_directory}' does not exist.")
+        except Exception as e:
+            return jsonify({"error": f"Failed to copy files from output directory: {str(e)}"}), 500
 
-        # Return a success response
+        try:
+            for file in additional_output_files:
+                if os.path.exists(file):
+                    os.remove(file)
+        except Exception as e:
+            return jsonify({"error": f"Failed to remove additional output files: {str(e)}"}), 500
+
+        try:
+            if os.path.isdir(output_directory):
+                shutil.rmtree(output_directory)
+                os.makedirs(output_directory, exist_ok=True)  # Recreate the empty 'output' directory
+        except Exception as e:
+            return jsonify({"error": f"Failed to clean up output directory: {str(e)}"}), 500
+
         return jsonify(results), 200
-
     except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
-    
+            return jsonify({"error": f"Failed to copy files from output directory: {str(e)}"}), 500
+
 
     
 

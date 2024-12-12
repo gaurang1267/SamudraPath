@@ -46,6 +46,7 @@ const HomePage = () => {
   const [selectedSubtype, setSelectedSubtype] = useState("");
   const [sourceCoordinates, setSourceCoordinates] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
+  const [nsga_paths_length, setNsgaPathLengths] = useState(0); // Changed to number
 
   const [routes, setRoutes] = useState([
     {
@@ -122,23 +123,74 @@ const HomePage = () => {
     );
   };
 
-  
-
-
+  // useEffect to fetch results.csv and set nsga_paths_length
   useEffect(() => {
-    // Only proceed if nsgaPathsLength is known
     if (nsgaPathsLength === null) return;
+    const fetchResultsCsv = async () => {
+      try {
+        const response = await fetch('/results.csv');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch results.csv: ${response.statusText}`);
+        }
+        const text = await response.text();
 
-    // Define dynamicColors and fetchCSV inside this effect so they can use nsgaPathsLength
-    const dynamicColors = [
-      "#FF0000", "#00FFFF", "#FF00FF", "#800000",
-      "#808000", "#008080", "#800080", "#008000",
-      "#000080", "#FFA500",
-    ];
-
-    const getDynamicColor = (index) => {
-      return dynamicColors[index % dynamicColors.length];
+        Papa.parse(text, {
+          complete: (result) => {
+            // Assuming each row represents a dynamic path
+            setNsgaPathLengths(result.data.length); // Set number of dynamic paths
+          },
+          header: true,
+          skipEmptyLines: true,
+        });
+      } catch (error) {
+        console.error('Error fetching or parsing results.csv:', error);
+      }
     };
+
+    fetchResultsCsv();
+  }, []); // Run once on mount
+
+  // Define a color palette for dynamic routes
+  const dynamicColors = [
+    "#FF0000", // Red
+    "#00FFFF", // Cyan
+    "#FF00FF", // Magenta
+    "#800000", // Maroon
+    "#808000", // Olive
+    "#008080", // Teal
+    "#800080", // Purple
+    "#008000", // Green
+    "#000080", // Navy
+    "#FFA500", // Orange
+    // Add more colors if needed
+  ];
+
+  const getDynamicColor = (index) => {
+    return dynamicColors[index % dynamicColors.length];
+  };
+
+  // Helper function to fetch and parse CSV files
+  const fetchCSV = (url, parseFunction, isPirate = false, dynamicIndex = null) => {
+    fetch(`${url}?t=${Date.now()}`) // Correct template literal
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok for ${url}`);
+        }
+        return response.text();
+      })
+      .then((data) => {
+        Papa.parse(data, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            const coordinates = results.data.map((row) => [
+              parseFloat(row.Longitude || row.longitude),
+              parseFloat(row.Latitude || row.latitude),
+            ]);
+            // Further code to handle the coordinates (e.g., updating state or map)
+          }
+        });
+      });
 
     const fetchCSV = (url, parseFunction, isPirate = false, dynamicIndex = null) => {
       fetch(`${url}?t=${Date.now()}`)
@@ -220,7 +272,33 @@ const HomePage = () => {
     };
 
     fetchAllData();
-  }, [nsgaPathsLength]);
+  };
+  // Function to fetch all CSV data based on nsga_paths_length
+  useEffect(() => {
+    if (nsga_paths_length === 0) return; // Avoid fetching if not set
+
+    const fetchAllData = () => {
+      // Fetch pirate coordinates
+      fetchCSV("/filtered_coordinates.csv", setPirateCoordinates, true);
+
+      // Fetch predefined routes
+      fetchCSV("/path_safe_smoothed.csv", updateCoordinates);
+      fetchCSV("/path_fuel_smoothed.csv", updateCoordinates);
+      fetchCSV("/path_short_smoothed.csv", updateCoordinates);
+
+      // Fetch additional dynamic routes using a loop
+      for (let i = 1; i <= nsga_paths_length; i++) {
+        const routePath = `/path${i}.csv`;
+        fetchCSV(routePath, updateCoordinates, false, i);
+      }
+    };
+
+    fetchAllData();
+
+    const intervalId = setInterval(fetchAllData, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [nsga_paths_length]); // Run when nsga_paths_length changes
 
   return (
     <div className="flex flex-col h-screen">
