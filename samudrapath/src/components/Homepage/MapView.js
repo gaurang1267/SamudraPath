@@ -98,7 +98,7 @@ const MapView = ({ handleMapClick, routes = [], pirateCoordinates = [] }) => {
                     />
                   </Source>
 
-                  <Marker longitude={firstPoint[0]} latitude={firstPoint[1]} anchor="bottom">
+                  {/* <Marker longitude={firstPoint[0]} latitude={firstPoint[1]} anchor="bottom">
                     <img
                       src="./starting.png"
                       alt="Start Point"
@@ -111,7 +111,7 @@ const MapView = ({ handleMapClick, routes = [], pirateCoordinates = [] }) => {
                       alt="End Point"
                       style={{ width: "32px", height: "32px" }}
                     />
-                  </Marker>
+                  </Marker> */}
                 </React.Fragment>
               );
             })}

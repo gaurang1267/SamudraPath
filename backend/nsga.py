@@ -821,7 +821,7 @@ def save_to_csv2(path):
     created_files = []
     for i, coordinates in enumerate(path, 1):
         # Create filename
-        filename = os.path.join('output', f'path{i}.csv')
+        filename = os.path.join('output', f'path_{i}_smoothed.csv')
         
         # Write coordinates to CSV
         with open(filename, 'w', newline='') as csvfile:

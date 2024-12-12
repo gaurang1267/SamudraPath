@@ -5,7 +5,31 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import filter_csv
 import shutil
+import pandas as pd
 
+
+def csv_to_json_pandas(csv_file_path, orient='records'):
+    """
+    Converts a CSV file to a JSON object using pandas.
+
+    :param csv_file_path: Path to the input CSV file.
+    :param orient: String indicating the format of the JSON output.
+                   'records' is a list of dictionaries.
+    :return: JSON object (list of dictionaries) representing the CSV data.
+    """
+    try:
+        # Read the CSV file into a DataFrame
+        df = pd.read_csv(csv_file_path, header=None)
+
+        # Convert the DataFrame to a JSON object (list of dictionaries)
+        json_data = df.to_dict(orient=orient)
+
+        print(f"Successfully converted {csv_file_path} to JSON object using pandas")
+        return json_data
+
+    except Exception as e:
+        print(f"Error converting CSV to JSON with pandas: {e}")
+        return None
 
 
 app = Flask(__name__)
@@ -49,6 +73,26 @@ def calculate_route():
             file_path = os.path.join(save_folder, filename)
             if os.path.exists(file_path):
                 os.remove(file_path)
+        
+        # Delete existing smoothed path files before copying new ones
+        try:
+            # Assuming nsga_paths_length determines the number of dynamic routes
+            # You can adjust the range as per your requirements
+            for i in range(1, 8):  # Replace 8 with nsga_paths_length + 1 if dynamic
+                filename = f"path_{i}_smoothed.csv"
+                file_path = os.path.join(save_folder, filename)
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    app.logger.info(f"Deleted existing file: {file_path}")
+        except Exception as e:
+            return jsonify({"error": f"Failed to delete existing smoothed path files: {str(e)}"}), 500
+
+        try:
+            for file in additional_output_files:
+                if os.path.exists(file):
+                    os.remove(file)
+        except Exception as e:
+            return jsonify({"error": f"Failed to remove additional output files: {str(e)}"}), 500
 
         # Ensure the save folder exists
         os.makedirs(save_folder, exist_ok=True)
@@ -136,12 +180,7 @@ def calculate_route():
         except Exception as e:
             return jsonify({"error": f"Failed to copy files from output directory: {str(e)}"}), 500
 
-        try:
-            for file in additional_output_files:
-                if os.path.exists(file):
-                    os.remove(file)
-        except Exception as e:
-            return jsonify({"error": f"Failed to remove additional output files: {str(e)}"}), 500
+        temp_res_json = csv_to_json_pandas ("./results.csv")
 
         try:
             if os.path.isdir(output_directory):
@@ -150,7 +189,7 @@ def calculate_route():
         except Exception as e:
             return jsonify({"error": f"Failed to clean up output directory: {str(e)}"}), 500
 
-        return jsonify(results), 200
+        return jsonify(results, temp_res_json), 200
     except Exception as e:
             return jsonify({"error": f"Failed to copy files from output directory: {str(e)}"}), 500
 
