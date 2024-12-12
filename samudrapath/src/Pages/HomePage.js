@@ -56,6 +56,9 @@ const HomePage = () => {
       visible: true,
       name: "Safest Path",
       description: "Safest Path",
+      fuel: Math.random()*(150000, 70000) + 70000,
+      safety: Math.random()*0.2,
+      time: Math.random()*(170, 50) + 70
     },
     {
       id: 2,
@@ -64,6 +67,9 @@ const HomePage = () => {
       visible: true,
       name: "Fuel Efficient Path",
       description: "Fuel Efficient Path",
+      fuel: Math.random()*(90000, 70000) + 70000,
+      safety: Math.random()*0.2+0.1,
+      time: Math.random()*(170, 50) + 70
     },
     {
       id: 3,
@@ -72,6 +78,9 @@ const HomePage = () => {
       visible: true,
       name: "Shortest Path",
       description: "Shortest Path",
+      fuel: Math.random()*(170000, 70000) + 110000,
+      safety: Math.random()*0.2+0.3,
+      time: Math.random()*(170, 50) + 70
     },
     // Dynamic routes will start from id >= 4
   ]);
@@ -197,6 +206,10 @@ const HomePage = () => {
                     visible: true, // Only first dynamic route is visible by default
                     name: `Optimal Path ${dynamicRouteIdRef.current - 3}`,
                     description: `Optimal Path ${dynamicRouteIdRef.current - 3}`,
+                    fuel: Math.random()*(130000, 70000) + 80000,
+                    safety: Math.random()*0.2,
+                    time: Math.random()*(120, 50) + 70
+
                   };
                   setRoutes((prevRoutes) => [...prevRoutes, newRoute]);
                   fetchedDynamicRoutesRef.current.add(dynamicUrl);

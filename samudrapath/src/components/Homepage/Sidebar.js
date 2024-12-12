@@ -561,13 +561,13 @@ const Sidebar = ({
                     }}
                   >
                     <div className="mb-2">
-                      <span className="font-semibold">Fuel:</span> {routeData[route.id]?.fuel ?? 'N/A' }
+                      <span className="font-semibold">Fuel:</span> { route.fuel }
                     </div>
                     <div className="mb-2">
-                      <span className="font-semibold">Duration:</span> {routeData[route.id]?.[2] ?? 'N/A' }
+                      <span className="font-semibold">Duration:</span> { route.time }
                     </div>
                     <div>
-                      <span className="font-semibold">Safety Index:</span> {routeData[route.id]?.[1] ?? 'N/A' }
+                      <span className="font-semibold">Safety Index:</span> { route.safe }
                     </div>
                   </div>
 
