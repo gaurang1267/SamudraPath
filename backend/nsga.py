@@ -805,8 +805,9 @@ def save_paths_to_csv(paths):
     
     # Write to file
     with open('data_points.csv', 'w') as f:
-        for path_str in path_strings:
-            f.write(path_str + '\n')
+        
+        for i in range(1, 8):
+            f.write(path_strings[i] + '\n')
 
 # from utils import latlon_to_index, index_to_latlon, valid_move, V0, Fitness
 # from search import a_star_search

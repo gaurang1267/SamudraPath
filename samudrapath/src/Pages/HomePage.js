@@ -46,7 +46,7 @@ const HomePage = () => {
   const [selectedSubtype, setSelectedSubtype] = useState("");
   const [sourceCoordinates, setSourceCoordinates] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
-  const [nsgaPathsLength, setNsgaPathsLength] = useState(0); // Changed to number
+  const [nsgaPathsLength, setNsgaPathsLength] = useState(0); // Number of dynamic paths
 
   const [routes, setRoutes] = useState([
     {
@@ -123,7 +123,7 @@ const HomePage = () => {
     }
   };
 
-  // Update predefined or dynamic route coordinates
+  // Update route coordinates by ID
   const updateCoordinates = (id, newCoordinates) => {
     setRoutes((prevRoutes) =>
       prevRoutes.map((route) =>
@@ -132,6 +132,7 @@ const HomePage = () => {
     );
   };
 
+  // Update route visibility by ID
   const updateVisibility = (id, visibility) => {
     setRoutes((prevRoutes) =>
       prevRoutes.map((route) =>
@@ -154,17 +155,19 @@ const HomePage = () => {
           header: true,
           skipEmptyLines: true,
           complete: (results) => {
-            const coordinates = results.data.map((row) => {
-              const lng = parseFloat(row.Longitude || row.longitude);
-              const lat = parseFloat(row.Latitude || row.latitude);
+            const coordinates = results.data
+              .map((row) => {
+                const lng = parseFloat(row.Longitude || row.longitude);
+                const lat = parseFloat(row.Latitude || row.latitude);
 
-              // Validate coordinates
-              if (isNaN(lng) || isNaN(lat)) {
-                console.error("Invalid coordinates:", lng, lat);
-                return null; // Skip invalid coordinates
-              }
-              return [lng, lat];
-            }).filter(Boolean); // Remove null or invalid coordinates
+                // Validate coordinates
+                if (isNaN(lng) || isNaN(lat)) {
+                  console.error("Invalid coordinates:", lng, lat);
+                  return null; // Skip invalid coordinates
+                }
+                return [lng, lat];
+              })
+              .filter(Boolean); // Remove null or invalid coordinates
 
             if (isPirate) {
               setPirateCoordinates(coordinates);
@@ -176,31 +179,38 @@ const HomePage = () => {
               };
 
               const match = url.match(/path_(\w+)_smoothed\.csv$/);
-              console.log(match, url)
               if (match) {
                 const key = match[1];
                 const routeId = predefinedRouteKeys[key];
                 if (routeId) {
                   parseFunction(routeId, coordinates);
                 }
-              } else if (dynamicIndex !== null) {
-                // Dynamic route
-                if (!fetchedDynamicRoutesRef.current.has(url)) {
-                  console.log(dynamicRouteIdRef.current)
+              } 
+              if (dynamicIndex !== null) {
+                // Handle dynamic route
+                const dynamicUrl = url; // e.g., /path_1_smoothed.csv
+                if (!fetchedDynamicRoutesRef.current.has(dynamicUrl)) {
                   const newRoute = {
                     id: dynamicRouteIdRef.current,
                     coordinates: coordinates,
                     color: getDynamicColor(dynamicRouteIdRef.current - 4),
-                    visible: dynamicIndex === 1, // Only first dynamic route is visible
+                    visible: true, // Only first dynamic route is visible by default
                     name: `Optimal Path ${dynamicRouteIdRef.current - 3}`,
                     description: `Optimal Path ${dynamicRouteIdRef.current - 3}`,
                   };
                   setRoutes((prevRoutes) => [...prevRoutes, newRoute]);
-                  fetchedDynamicRoutesRef.current.add(url);
+                  fetchedDynamicRoutesRef.current.add(dynamicUrl);
                   console.log(`Added new dynamic route: ${newRoute.name}`);
                   dynamicRouteIdRef.current += 1;
                 } else {
                   console.log(`Dynamic route ${url} already fetched.`);
+                  // Optionally, update existing dynamic route coordinates
+                  const existingRoute = routes.find(
+                    (route) => route.coordinates.length > 0 && route.coordinates[0][0] === coordinates[0][0] // Simple check, adjust as needed
+                  );
+                  if (existingRoute) {
+                    updateCoordinates(existingRoute.id, coordinates);
+                  }
                 }
               }
             }
@@ -225,7 +235,7 @@ const HomePage = () => {
         Papa.parse(text, {
           complete: (result) => {
             // Assuming each row represents a dynamic path
-            setNsgaPathsLength(Math.min(8, result.data.length)); // Set number of dynamic paths
+            setNsgaPathsLength(Math.min(8, result.data.length)); // Set number of dynamic paths (max 8)
           },
           header: true,
           skipEmptyLines: true,
@@ -250,7 +260,7 @@ const HomePage = () => {
       fetchCSV("/path_safe_smoothed.csv", updateCoordinates);
       fetchCSV("/path_fuel_smoothed.csv", updateCoordinates);
       fetchCSV("/path_short_smoothed.csv", updateCoordinates);
-      fetchCSV("/path_1_smoothed.csv", updateCoordinates);
+      // Removed fetchCSV("/path_1_smoothed.csv", updateCoordinates) to avoid conflict
 
       // Fetch dynamic routes using a loop
       for (let i = 1; i <= nsgaPathsLength; i++) {
