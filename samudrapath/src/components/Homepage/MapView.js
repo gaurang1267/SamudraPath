@@ -69,7 +69,7 @@ const MapView = ({ handleMapClick, routes = [], pirateCoordinates = [] }) => {
                       type="line"
                       paint={{
                         "line-color": route.color || "#FFFF44",
-                        "line-width": route.id >= 4 ? 2 : 4,
+                        "line-width": route.id >= 4 ? 1 : 4,
                       }}
                     />
                   </Source>

@@ -527,207 +527,75 @@ const Sidebar = ({
               Respective Optimized Routes
             </h2>
 
-            {/* Hardcoded Route 1 */}
-            <div className="p-3 bg-white rounded-md shadow-md hover:shadow-lg transition mb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">Optimal Route 1</h3>
-                  {/* <p className="text-gray-700">{route.description}</p> */}
-                </div>
+            {routes.map((route) => (
+              <div
+                key={route.id}
+                className="p-3 bg-white rounded-md shadow-md hover:shadow-lg transition"
 
-                <button
-                  className="mr-4 focus:outline-none"
-                  onClick={() => {
-                    const route = routes.find(route => route.id === 1);
-                    updateVisibility(1, !route.visible);
-                  }}
-                >
-                  {routes.find(route => route.id === 1).visible ? (
-                    <FaEye className="text-2xl" style={{ color: "#FF0000" }} />
-                  ) : (
-                    <FaEyeSlash className="text-2xl text-gray-400" />
-                  )}
-                </button>
-              </div>
+              >
 
-              <div className="flex items-start gap-4 mt-3">
-                {/* Route Data Section */}
-                <div
-                  className="flex flex-col p-4 bg-white text-sm text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out flex-grow"
-                  style={{
-                    borderLeft: `4px solid #FF0000`, // Modern border styling
-                  }}
-                >
-                  <div className="mb-2">
-                    <span className="font-semibold">Fuel:</span> {112978.787 || 'N/A'}
-                  </div>
-                  <div className="mb-2">
-                    <span className="font-semibold">Duration(hrs):</span> {62.035 || 'N/A'}
-                  </div>
+
+                <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-semibold">Safety Index:</span> {0.576 || 'N/A'}
+                    <h3 className="text-xl font-semibold">{route.name}</h3>
+                    {/* <p className="text-gray-700">{route.description}</p> */}
                   </div>
+
+                  <button
+                    className="mr-4"
+                    onClick={() => updateVisibility(route.id, !route.visible)}
+                  >
+                    {route.visible ? (
+                      <FaEye className="text-2xl " style={{ color: route.color }} />
+                    ) : (
+                      <FaEyeSlash className="text-2xl text-gray-400" />
+                    )}
+                  </button>
+                </div>
+                <div className="flex items-start gap-4 mt-3">
+                  {/* Route Data Section */}
+                  <div
+                    className="flex flex-col p-4 bg-white text-sm text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out flex-grow"
+                    style={{
+                      borderLeft: `4px solid ${route.color}`, // Modern border styling
+                    }}
+                  >
+                    <div className="mb-2">
+                      <span className="font-semibold">Fuel:</span> {routeData[route.id]?.fuel ?? 'N/A' }
+                    </div>
+                    <div className="mb-2">
+                      <span className="font-semibold">Duration:</span> {routeData[route.id]?.[2] ?? 'N/A' }
+                    </div>
+                    <div>
+                      <span className="font-semibold">Safety Index:</span> {routeData[route.id]?.[1] ?? 'N/A' }
+                    </div>
+                  </div>
+
+                  {/* Position Button */}
+                  {route.id >= 4 && <button
+                    className="w-32 p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center justify-center transition-colors duration-300 ease-in-out shadow-md hover:shadow-lg"
+                    style={{
+                      borderWidth: "2px",
+                      borderColor: route.color, // Dynamically set the border color
+                    }}
+                    onClick={() => handleClick(route.id)} // Ensure route.id is passed
+                  >
+                    Position After 24 Hours
+                  </button>}
                 </div>
 
-                {/* Position Button */}
-                <button
-                  className="w-32 p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center justify-center transition-colors duration-300 ease-in-out shadow-md hover:shadow-lg"
-                  style={{
-                    borderWidth: "2px",
-                    borderColor: "#FF0000", // Dynamically set the border color
-                  }}
-                  onClick={() => handleClick(1)} // Ensure route.id is passed
-                >
-                  Position After 24 Hours
-                </button>
+
+                {/* Conditionally render the "Recalculate Route" button */}
+                {showRecalculateButton && (
+                  <button
+                    className="w-full flex items-center justify-center gap-2 p-3 bg-teal-600 text-white rounded-md hover:bg-teal-700 transform transition duration-300 h-10 mt-2"
+                    onClick={handleRecalculateRoute}
+                  >
+                    Recalculate Route
+                  </button>
+                )}
               </div>
-
-              {/* Conditionally render the "Recalculate Route" button */}
-              {showRecalculateButton && (
-                <button
-                  className="w-full flex items-center justify-center gap-2 p-3 bg-red-600 text-white rounded-md hover:bg-red-700 transform transition duration-300 h-10 mt-2"
-                  onClick={() => handleRecalculateRoute(1)}
-                >
-                  Recalculate Route
-                </button>
-              )}
-            </div>
-
-            {/* Hardcoded Route 2 */}
-            <div className="p-3 bg-white rounded-md shadow-md hover:shadow-lg transition mb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">Optimal Route 2</h3>
-                  {/* <p className="text-gray-700">{route.description}</p> */}
-                </div>
-
-                <button
-                  className="mr-4 focus:outline-none"
-                  onClick={() => {
-                    const route = routes.find(route => route.id === 2);
-                    updateVisibility(2, !route.visible);
-                  }}
-                >
-                  {routes.find(route => route.id === 2).visible ? (
-                    <FaEye className="text-2xl" style={{ color: "#0000FF" }} />
-                  ) : (
-                    <FaEyeSlash className="text-2xl text-gray-400" />
-                  )}
-                </button>
-              </div>
-
-              <div className="flex items-start gap-4 mt-3">
-                {/* Route Data Section */}
-                <div
-                  className="flex flex-col p-4 bg-white text-sm text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out flex-grow"
-                  style={{
-                    borderLeft: `4px solid #FF00FF`, // Modern border styling
-                  }}
-                >
-                  <div className="mb-2">
-                    <span className="font-semibold">Fuel:</span> {132364 || 'N/A'}
-                  </div>
-                  <div className="mb-2">
-                    <span className="font-semibold">Duration(hrs):</span> {65.432 || 'N/A'}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Safety Index:</span> {0.225|| 'N/A'}
-                  </div>
-                </div>
-
-                {/* Position Button */}
-                <button
-                  className="w-32 p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center justify-center transition-colors duration-300 ease-in-out shadow-md hover:shadow-lg"
-                  style={{
-                    borderWidth: "2px",
-                    borderColor: "#FF00FF", // Dynamically set the border color
-                  }}
-                  onClick={() => handleClick(2)} // Ensure route.id is passed
-                >
-                  Position After 24 Hours
-                </button>
-              </div>
-
-              {/* Conditionally render the "Recalculate Route" button */}
-              {showRecalculateButton && (
-                <button
-                  className="w-full flex items-center justify-center gap-2 p-3 bg-red-600 text-white rounded-md hover:bg-red-700 transform transition duration-300 h-10 mt-2"
-                  onClick={() => handleRecalculateRoute(2)}
-                >
-                  Recalculate Route
-                </button>
-              )}
-            </div>
-
-            {/* Hardcoded Route 3 */}
-            <div className="p-3 bg-white rounded-md shadow-md hover:shadow-lg transition mb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">Optimal Route 3</h3>
-                  {/* <p className="text-gray-700">{route.description}</p> */}
-                </div>
-
-                <button
-                  className="mr-4 focus:outline-none"
-                  onClick={() => {
-                    const route = routes.find(route => route.id === 3);
-                    updateVisibility(3, !route.visible);
-                  }}
-                >
-                  {routes.find(route => route.id === 3).visible ? (
-                    <FaEye className="text-2xl" style={{ color: "#FFA500" }} />
-                  ) : (
-                    <FaEyeSlash className="text-2xl text-gray-400" />
-                  )}
-                </button>
-              </div>
-
-              <div className="flex items-start gap-4 mt-3">
-                {/* Route Data Section */}
-                <div
-                  className="flex flex-col p-4 bg-white text-sm text-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 ease-in-out flex-grow"
-                  style={{
-                    borderLeft: `4px solid #00FFFF`, // Modern border styling
-                  }}
-                >
-                  <div className="mb-2">
-                    <span className="font-semibold">Fuel:</span> {120810.09 || 'N/A'}
-                  </div>
-                  <div className="mb-2">
-                    <span className="font-semibold">Duration(hrs):</span> {60.73 || 'N/A'}
-                  </div>
-                  <div>
-                    <span className="font-semibold">Safety Index:</span> {0.26 || 'N/A'}
-                  </div>
-                </div>
-
-                {/* Position Button */}
-                <button
-                  className="w-32 p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center justify-center transition-colors duration-300 ease-in-out shadow-md hover:shadow-lg"
-                  style={{
-                    borderWidth: "2px",
-                    borderColor: "#00FFFF", // Dynamically set the border color
-                  }}
-                  onClick={() => handleClick(3)} // Ensure route.id is passed
-                >
-                  Position After 24 Hours
-                </button>
-              </div>
-
-              {/* Conditionally render the "Recalculate Route" button */}
-              {showRecalculateButton && (
-                <button
-                  className="w-full flex items-center justify-center gap-2 p-3 bg-red-600 text-white rounded-md hover:bg-red-700 transform transition duration-300 h-10 mt-2"
-                  onClick={() => handleRecalculateRoute(3)}
-                >
-                  Recalculate Route
-                </button>
-              )}
-            </div>
-
-              
-            
-
+            ))}
           </div>
         )}
       </aside>
