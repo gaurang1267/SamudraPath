@@ -56,8 +56,8 @@ const HomePage = () => {
       visible: true,
       name: "Safest Path",
       description: "Safest Path",
-      fuel: Math.random()*(150000, 70000) + 70000,
-      safety: Math.random()*0.2,
+      fuel: 105200.967,
+      safety: 0.15,
       time: Math.random()*(170, 50) + 70
     },
     {
@@ -67,8 +67,8 @@ const HomePage = () => {
       visible: true,
       name: "Fuel Efficient Path",
       description: "Fuel Efficient Path",
-      fuel: Math.random()*(90000, 70000) + 70000,
-      safety: Math.random()*0.2+0.1,
+      fuel: 95273.56,
+      safety: 0.32,
       time: Math.random()*(170, 50) + 70
     },
     {
@@ -78,8 +78,8 @@ const HomePage = () => {
       visible: true,
       name: "Shortest Path",
       description: "Shortest Path",
-      fuel: Math.random()*(170000, 70000) + 110000,
-      safety: Math.random()*0.2+0.3,
+      fuel: 110256.253,
+      safety: 0.55,
       time: Math.random()*(170, 50) + 70
     },
     // Dynamic routes will start from id >= 4

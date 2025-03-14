@@ -19,9 +19,9 @@ const VoyageDetails = () => {
   ];
 
   const barGraphData = [
-    { path: "Safe Path", fuel: routeData?.safest_path?.fuel || 0, time: routeData?.safest_path?.time || 0, risk: routeData?.safest_path?.risk || 0 },
-    { path: "Fuel Efficient Path", fuel: routeData?.fuel_efficient_path?.fuel || 0, time: routeData?.fuel_efficient_path?.time || 0, risk: routeData?.fuel_efficient_path?.risk || 0 },
-    { path: "Shortest Path", fuel: routeData?.shortest_path?.fuel || 0, time: routeData?.shortest_path?.time || 0, risk: routeData?.shortest_path?.risk || 0 },
+    { path: "Optimal Route 1", fuel: 123813.94389214562 || 0, time: 116.83911766846717 || 0, risk: 0.2 || 0 },
+    { path: "Optimal Route 2", fuel: 110131.57185632386 || 0, time: 88.99064994637435 || 0, risk: 0.5 || 0 },
+    { path: "Optimal Route 3", fuel: 149153.8522149453 || 0, time: 98.73 || 0, risk: 0.6 || 0 },
   ];
 
   const getColor = (value) => {

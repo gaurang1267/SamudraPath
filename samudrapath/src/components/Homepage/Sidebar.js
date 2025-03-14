@@ -567,7 +567,7 @@ const Sidebar = ({
                       <span className="font-semibold">Duration:</span> { route.time }
                     </div>
                     <div>
-                      <span className="font-semibold">Safety Index:</span> { route.safe }
+                      <span className="font-semibold">Risk:</span> { route.safety }
                     </div>
                   </div>
 
